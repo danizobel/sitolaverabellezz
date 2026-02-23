@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Vera Bellezza - Menu & Delivery</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-header: #1a2a3a; 
+            --bg-dark: #111b24; 
+            --bg-choco: #2a4158; 
+            --accent-gold: #d4af37; 
+            --text-cream: #f8f9fa;
+            --text-dark: #1a2a3a; 
+            --text-muted: #b0c4de; 
+            --card-glass: rgba(42, 65, 88, 0.75);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(to bottom, var(--bg-dark), var(--bg-choco)); color: var(--text-cream); padding-bottom: 120px; min-height: 100vh; }
+
+        header { position: relative; text-align: center; padding: 35px 20px 70px; background: var(--bg-header); overflow: hidden; }
+        .header-content { position: relative; z-index: 2; }
+        header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 600; color: var(--accent-gold); margin-bottom: 5px; letter-spacing: 1px;}
+        header h2 { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-style: italic; color: var(--text-cream); margin-bottom: 15px; font-weight: 400;}
+        
+        .restaurant-info { display: inline-block; background: rgba(0,0,0,0.2); border: 1px solid rgba(212, 175, 55, 0.3); padding: 15px 20px; border-radius: 12px; text-align: left; }
+        .info-line { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;}
+        .info-line:last-child { margin-bottom: 0; }
+        .info-line i { color: var(--accent-gold); width: 16px; text-align: center;}
+
+        .choco-wave { position: absolute; bottom: -1px; left: 0; width: 100%; line-height: 0; transform: rotate(180deg); }
+        .choco-wave svg { display: block; width: calc(138% + 1.3px); height: 60px; }
+        .choco-wave .shape-fill { fill: var(--bg-dark); }
+
+        .filters-container { display: flex; overflow-x: auto; gap: 10px; padding: 15px 20px; position: sticky; top: 0; background: rgba(17, 27, 36, 0.98); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid rgba(212, 175, 55, 0.1); }
+        .filters-container::-webkit-scrollbar { display: none; }
+        .filter-btn { background: rgba(255, 255, 255, 0.05); color: var(--text-cream); border: 1px solid rgba(212, 175, 55, 0.3); padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; }
+        .filter-btn.active { background: var(--accent-gold); color: var(--bg-dark); border-color: var(--accent-gold); box-shadow: 0 2px 10px rgba(212, 175, 55, 0.3); }
+        
+        .menu-container { padding: 0 15px; max-width: 900px; margin: 0 auto;}
+        .category-section { animation: fadeIn 0.4s ease-in-out; display: block; }
+        .category-section.hidden { display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .category-title { font-family: 'Playfair Display', serif; padding: 25px 5px 10px; font-size: 1.6rem; font-weight: 600; color: var(--accent-gold); text-transform: uppercase; border-bottom: 1px solid rgba(212, 175, 55, 0.2); margin-bottom: 15px; }
+        
+        .menu-item { background-color: var(--card-glass); backdrop-filter: blur(10px); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 16px; padding: 16px; margin: 15px 0; display: flex; flex-direction: column; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+        .item-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 600; color: var(--text-cream); line-height: 1.2; padding-right: 10px;}
+        .item-price { font-size: 1.2rem; font-weight: 800; color: var(--accent-gold); white-space: nowrap;}
+        .item-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px; font-weight: 400; flex-grow: 1;}
+        
+        .controls { display: flex; align-items: center; justify-content: flex-end; gap: 15px; margin-top: auto; padding-top: 10px; border-top: 1px dotted rgba(212, 175, 55, 0.2); }
+        .btn-control { background: transparent; color: var(--accent-gold); border: 1.5px solid var(--accent-gold); border-radius: 50%; width: 34px; height: 34px; font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
+        .btn-control:active { background: var(--accent-gold); color: var(--bg-dark); }
+        .qty { font-weight: 700; font-size: 1.2rem; min-width: 25px; text-align: center; color: var(--text-cream);}
+
+        .allergens-box { margin: 40px 15px 20px; padding: 20px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(212, 175, 55, 0.3); border-radius: 12px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; text-align: justify;}
+        .allergens-box h4 { color: var(--accent-gold); margin-bottom: 10px; font-size: 1rem; text-transform: uppercase;}
+
+        .cart-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(17, 27, 36, 0.98); padding: 15px 20px 20px; display: flex; justify-content: space-between; align-items: center; border-top: 2px solid var(--accent-gold); transform: translateY(120%); transition: transform 0.3s ease; z-index: 1000; border-radius: 20px 20px 0 0; }
+        .cart-footer.visible { transform: translateY(0); }
+        .cart-total { font-size: 1.3rem; font-weight: 900; color: var(--accent-gold); }
+        .cart-total span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .btn-checkout { background: linear-gradient(45deg, var(--accent-gold), #e6c555); color: var(--bg-dark); border: none; padding: 12px 20px; border-radius: 50px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);}
+
+        .checkout-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .checkout-modal.active { display: flex; }
+        .checkout-content { background: var(--bg-choco); border: 1px solid var(--accent-gold); border-radius: 20px; padding: 25px 20px; width: 100%; max-width: 450px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+        .checkout-content h3 { font-family: 'Playfair Display', serif; color: var(--accent-gold); margin-bottom: 20px; font-weight: 600; font-size: 1.5rem;}
+        
+        .type-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
+        .type-toggle label { flex: 1; text-align: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; transition: 0.3s;}
+        .type-toggle input[type="radio"] { display: none; }
+        .type-toggle label.active { background: rgba(212, 175, 55, 0.1); border-color: var(--accent-gold); color: var(--accent-gold); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-cream); margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(212,175,55,0.3); color: var(--text-cream); outline: none; font-size: 1rem; appearance: none; -webkit-appearance: none;}
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent-gold); }
+        .btn-confirm-order { width: 100%; background: #003366; /* Colore Nexi */ color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+
+        @media (min-width: 768px) {
+            .filters-container { justify-content: center; flex-wrap: wrap; overflow-x: visible; padding: 20px; border-bottom: 2px solid rgba(212, 175, 55, 0.2); }
+            .filter-btn { font-size: 1rem; padding: 10px 24px; }
+            .menu-container { padding: 30px 20px; }
+            .category-section { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+            .category-title { grid-column: span 2; text-align: center; margin-top: 20px; font-size: 2rem; }
+            .menu-item { margin: 0; height: 100%; }
+            .cart-footer { justify-content: center; gap: 50px; padding: 20px 0; }
+            .allergens-box { grid-column: span 2; margin-top: 40px;}
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <h1>La Vera Bellezza</h1>
+            <h2>Pizzeria dall’animo napoletano | Cucina tipica</h2>
+            
+            <div class="restaurant-info">
+                <div class="info-line"><i class="fa-solid fa-location-dot"></i> Via Gennaro Tescione 164, Caserta 81100</div>
+                <div class="info-line"><i class="fa-regular fa-clock"></i> 12:00-15:30 | 19:00-00:00</div>
+                <div class="info-line"><i class="fa-solid fa-calendar-xmark"></i> Domenica Chiusi</div>
+            </div>
+        </div>
+        <div class="choco-wave"><svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path></svg></div>
+    </header>
+
+    <div class="filters-container" id="filters-container"></div>
+    <div id="menu-container" class="menu-container"></div>
+
+    <div class="cart-footer" id="cart-footer">
+        <div class="cart-total"><span>Totale Ordine</span><div id="total-price">0,00 €</div></div>
+        <button class="btn-checkout" onclick="openCheckout()"><i class="fa-solid fa-cart-shopping"></i> Paga Ora</button>
+    </div>
+
+    <div class="checkout-modal" id="checkout-modal">
+        <div class="checkout-content">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeCheckout()"></i>
+            <h3>Completa l'Ordine</h3>
+            
+            <div id="dati-cliente-form">
+                <div class="type-toggle">
+                    <label id="lbl-takeaway" class="active">
+                        <input type="radio" name="order-type" value="takeaway" checked onchange="toggleOrderType()">
+                        🛍️ Ritiro Locale
+                    </label>
+                    <label id="lbl-delivery">
+                        <input type="radio" name="order-type" value="delivery" onchange="toggleOrderType()">
+                        🛵 Domicilio
+                    </label>
+                </div>
+
+                <div class="form-group"><label>Nome e Cognome *</label><input type="text" id="cust-name" required></div>
+                <div class="form-group"><label>Telefono *</label><input type="tel" id="cust-phone" required></div>
+				
+                <div id="takeaway-fields">
+                    <div class="form-group">
+                        <label for="orario-consegna">Seleziona Fascia Oraria *</label>
+                        <select id="orario-consegna" name="orario" required>
+                            </select>
+                    </div>
+                </div>
+
+                <div id="delivery-fields" style="display: none;">
+                    <div class="form-group">
+                        <label>Indirizzo (Via e Civico) *</label>
+                        <input type="text" id="cust-address" placeholder="Es. Via Roma 164">
+                    </div>
+                </div>
+
+                <div class="form-group"><label>Note Aggiuntive</label><textarea id="cust-notes" rows="2" placeholder="Citofono o Allergie"></textarea></div>
+				
+                <button class="btn-confirm-order" onclick="sendOrderWithDetails()" id="pay-btn">
+                    <i class="fa-regular fa-credit-card"></i> Paga con Nexi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <form id="nexi-form" method="POST" action="https://xpay.nexigroup.com/ecomm/ecomm/DispatcherServlet" style="display: none;">
+        <input type="hidden" name="alias" id="nexi-alias">
+        <input type="hidden" name="importo" id="nexi-importo">
+        <input type="hidden" name="divisa" id="nexi-divisa">
+        <input type="hidden" name="codTrans" id="nexi-codTrans">
+        <input type="hidden" name="mac" id="nexi-mac">
+        <input type="hidden" name="url" id="nexi-url">
+        <input type="hidden" name="url_back" id="nexi-url-back">
+    </form>
+
+    <script>
+        // MENU COMPLETO ESTRATTO DAL PDF
+        const menuData = [
+            {
+                id: "sfizi",
+                category: "Sfizi",
+                items: [
+                    { id: 1, name: "Cuoppo di Terra", desc: "Zeppoline, crocchè, arancini, mozzarella in carrozza e verdure pastellate", price: 6.50 },
+                    { id: 2, name: "Crocchè di Patate Grande", desc: "Classico ripieno e fritto", price: 2.00 },
+                    { id: 3, name: "Frittatina di Pasta Grande", desc: "La vera frittatina napoletana", price: 2.50 },
+                    { id: 4, name: "Arancino Grande", desc: "Fritto tradizionale", price: 2.00 },
+                    { id: 5, name: "Montanare 2pz", desc: "Pizzette fritte col pomodoro", price: 5.00 },
+                    { id: 6, name: "Mozzarella in Carrozza Grande", desc: "Ripieno filante", price: 2.50 },
+                    { id: 7, name: "Patatine Fritte*", desc: "Porzione classica", price: 5.00 },
+                    { id: 8, name: "Patate Monty", desc: "Provola di Agerola e Würstel", price: 6.50 },
+                    { id: 9, name: "Polpettine di Scottona", desc: "Con patate monty", price: 8.00 }
+                ]
+            },
+            {
+                id: "antipasti",
+                category: "Antipasti",
+                items: [
+                    { id: 10, name: "Tegamino di Parmigiana", desc: "Parmigiana di melanzane tradizionale", price: 7.00 },
+                    { id: 11, name: "Contadino", desc: "Misto di verdure di stagione, mozzarella di bufala DOP", price: 8.00 },
+                    { id: 12, name: "Bruschette Miste 4pz", desc: "Selezione di sapori", price: 5.00 },
+                    { id: 13, name: "Bruschette al Pomodoro 5pz", desc: "Classica pomodorini, aglio e basilico", price: 4.00 },
+                    { id: 14, name: "Tagliere Salumi e Formaggi", desc: "Selezione di prodotti nostrani", price: 10.00 }
+                ]
+            },
+            {
+                id: "primi",
+                category: "Primi Piatti",
+                items: [
+                    { id: 15, name: "Ziti Spezzati alla Genovese", desc: "Sugo classico napoletano", price: 9.50 },
+                    { id: 16, name: "Pasta Patate Provola e Parmigiano", desc: "Il classico comfort food", price: 9.00 },
+                    { id: 17, name: "Spaghetti Quadrati", desc: "Con vongole e datterini gialli", price: 11.00 }
+                ]
+            },
+            {
+                id: "secondi",
+                category: "Secondi Piatti",
+                items: [
+                    { id: 18, name: "Tagliata di Manzo 300gr", desc: "Rucola, pomodorini e scaglie", price: 17.00 },
+                    { id: 19, name: "Hamburger di Scottona", desc: "Con contorno a scelta", price: 12.00 },
+                    { id: 20, name: "Baccalà in Cassuola", desc: "Datterini, olive e capperi", price: 12.00 },
+                    { id: 21, name: "Baccalà Fritto*", desc: "Accompagnato con scarole stufate", price: 12.00 }
+                ]
+            },
+            {
+                id: "insalatone",
+                category: "Insalatone",
+                items: [
+                    { id: 22, name: "Ciliegina", desc: "Insalatine, radicchio, melanzane grigliate, carote, pomodorini, olive bianche e bufala DOP", price: 7.50 },
+                    { id: 23, name: "Verdummara", desc: "Insalatine, radicchio, olive bianche, carote, verdure grigliate, uova sode, provola, pesto", price: 7.50 },
+                    { id: 24, name: "Carpaccio", desc: "Bresaola, rucola, scaglie di parmigiano e ananas", price: 8.00 },
+                    { id: 25, name: "La Vegana", desc: "Insalatine, radicchio, pomodorini, patate, mais, rucola, carote, frutta di stagione", price: 7.00 },
+                    { id: 26, name: "Mangiami", desc: "Insalatine, rucola, radicchio, finocchio, noci, frutta di stagione", price: 7.00 },
+                    { id: 27, name: "Pimpante", desc: "Insalatine, radicchio, pollo, tonno, uova sode, pomodorini, carote, scaglie parmigiano", price: 8.50 },
+                    { id: 28, name: "Fresella", desc: "Insalatine, pomodori, rucola, bufala DOP, olive, carote, mais, tonno", price: 8.00 }
+                ]
+            },
+            {
+                id: "pizze-classiche",
+                category: "Pizze Classiche",
+                items: [
+                    { id: 29, name: "Cosacca", desc: "Pomodoro San Marzano, basilico, scaglie di parmigiano", price: 5.00 },
+                    { id: 30, name: "Marinara", desc: "Pomodoro San Marzano, aglio, origano", price: 5.00 },
+                    { id: 31, name: "Margherita", desc: "Pomodoro San Marzano, fior di latte di Agerola, basilico", price: 6.00 },
+                    { id: 32, name: "Capricciosa", desc: "Pomodoro, fior di latte, carciofini, funghi champignon, prosciutto cotto, olive nere", price: 8.00 },
+                    { id: 33, name: "Parmigiana", desc: "Pomodoro, parmigiana di melanzane, provola di Agerola e parmigiano", price: 7.50 },
+                    { id: 34, name: "Diavola", desc: "Pomodoro San Marzano, fior di latte, salame piccante nostrano", price: 7.50 },
+                    { id: 35, name: "Siciliana", desc: "Pomodoro San Marzano, fior di latte di Agerola, melanzane a funghetto", price: 7.50 },
+                    { id: 36, name: "Pizza Chef", desc: "Fior di latte, panna, prosciutto cotto e funghi champignon", price: 7.50 },
+                    { id: 37, name: "Mimosa", desc: "Fior di latte di Agerola, panna, prosciutto cotto e mais", price: 7.00 },
+                    { id: 38, name: "Napoli", desc: "Pomodoro, olive di Gaeta, capperi, acciughe di Cetara, aglio e origano", price: 6.50 },
+                    { id: 39, name: "Tedesca", desc: "Fior di latte di Agerola, würstel e patatine", price: 7.00 }
+                ]
+            },
+            {
+                id: "pizze-casa",
+                category: "Pizze della Casa",
+                items: [
+                    { id: 40, name: "La Vera Bellezza", desc: "Ripieno fior di latte e ricotta. In uscita: crudo di Parma, rucola, scaglie, olio evo", price: 8.50 },
+                    { id: 41, name: "Ripieno", desc: "Pomodoro San Marzano, fior di latte, ricotta, salame Napoli e pepe", price: 8.00 },
+                    { id: 42, name: "Zingara", desc: "Pomodorini, fior di latte. In uscita: crudo di Parma, scaglie e rucola", price: 8.50 },
+                    { id: 43, name: "La Saporita", desc: "Fior di latte, gorgonzola, emmenthal, scamorza, crema di pecorino", price: 7.00 },
+                    { id: 44, name: "Popolana", desc: "Provola, ragù napoletano, polpettine scottona e ricotta bufala", price: 9.00 },
+                    { id: 45, name: "Gustosa", desc: "Fior di latte di Agerola, crema di noci, crudo di Parma", price: 8.00 },
+                    { id: 46, name: "La Verace", desc: "Pomodoro San Marzano, bufala DOP, basilico e olio evo", price: 8.00 },
+                    { id: 47, name: "Contadina", desc: "Ripieno di scarola stufata con olive nere e capperi, provola di Agerola", price: 8.00 },
+                    { id: 48, name: "Campagnola", desc: "Pomodorini, provola di Agerola e verdure di stagione", price: 8.00 },
+                    { id: 49, name: "Vulio", desc: "Metà ripieno ricotta e salame, metà margherita", price: 8.50 },
+                    { id: 50, name: "Valtellina", desc: "Fior di latte, bresaola, rucola e scaglie di parmigiano", price: 9.00 },
+                    { id: 51, name: "Tirolese", desc: "Provola di Agerola, crema di pecorino DOP, speck di montagna", price: 8.00 },
+                    { id: 52, name: "Cafona", desc: "Crema di pistacchio di Bronte, mortadella e provola di Agerola", price: 9.00 },
+                    { id: 53, name: "Sfiziosa", desc: "Crema di noci, fior di latte di Agerola, gorgonzola e speck", price: 8.50 },
+                    { id: 54, name: "Cocozza", desc: "Crema di zucca, fior di latte, salsiccia paesana e funghi porcini", price: 9.00 },
+                    { id: 55, name: "Panzarotto", desc: "Fior di latte, crocchè di patate, panna e prosciutto cotto", price: 7.50 },
+                    { id: 56, name: "Pizza Fritta Ripiena", desc: "Provola di Agerola, ricotta, cicoli napoletani e pepe", price: 8.00 },
+                    { id: 57, name: "Carrettiera", desc: "Provola di Agerola, salsiccia paesana e friarielli a km0", price: 8.50 },
+                    { id: 58, name: "Genovese", desc: "Provola, sugo di carne alla genovese, formaggio grattugiato", price: 9.00 }
+                ]
+            },
+            {
+                id: "gourmet",
+                category: "Pizze Gourmet",
+                items: [
+                    { id: 59, name: "Partenope DOP", desc: "Pomodorini del piennolo, gialli a pacchetelle, bufala DOP, basilico, olio evo", price: 9.00 },
+                    { id: 60, name: "Don Mimì", desc: "Pomodorini gialli a pacchetelle, provola di Agerola, spianata calabra, basilico", price: 9.00 },
+                    { id: 61, name: "Casertana", desc: "Crema pecorino DOP, fior di latte, funghi porcini, salsiccia maialino nero", price: 9.50 },
+                    { id: 62, name: "Lucariello", desc: "Pesto basilico, pomodorini rossi del piennolo, gialli a pacchetelle, fior di latte", price: 8.50 },
+                    { id: 63, name: "La Cetarese", desc: "Bufala DOP, acciughe di Cetara, pomodorini gialli, olive nere e olio evo", price: 8.50 },
+                    { id: 64, name: "Zuccotto", desc: "Vellutata di zucca, provola di Agerola, pancetta paesana, scaglie", price: 8.50 },
+                    { id: 65, name: "Leopoldo", desc: "Fior di latte, provola, pomodorini gialli, pancetta cafona, tarallo sbriciolato", price: 9.50 },
+                    { id: 66, name: "Ripieno Bronte", desc: "Crema pistacchio Bronte, fior di latte, ricotta bufala, mortadella IGP", price: 9.50 },
+                    { id: 67, name: "La Cilentana", desc: "Fior di latte, salamino piccante maialino nero, olive nere, pomodori secchi", price: 9.50 }
+                ]
+            },
+            {
+                id: "panuozzi",
+                category: "Panuozzi & Panini",
+                items: [
+                    { id: 68, name: "Panuozzo Profumato", desc: "Fior di latte di Agerola, pomodorini, crudo di Parma e rucola", price: 8.50 },
+                    { id: 69, name: "Panuozzo Leggero", desc: "Bresaola, fior di latte di Agerola, rucola e scaglie di parmigiano", price: 9.00 },
+                    { id: 70, name: "Panuozzo Paesano", desc: "Provola di Agerola, salsiccia paesana e friarielli a km0", price: 8.50 },
+                    { id: 71, name: "Panino Completo", desc: "Doppio hamburger, insalata mista, provola di Agerola, patate fritte*", price: 9.00 },
+                    { id: 72, name: "Panino Mammà", desc: "Provola di Agerola, melanzane a funghetto, polpettine di carne scottona", price: 8.50 },
+                    { id: 73, name: "Panino Pab", desc: "Cotoletta di carne, fior di latte di Agerola e patate fritte*", price: 8.00 }
+                ]
+            },
+            {
+                id: "dolci",
+                category: "Frutta, Dolci & Gelati",
+                items: [
+                    { id: 74, name: "Ananas", desc: "Frutta fresca", price: 4.00 },
+                    { id: 75, name: "Tagliata di Frutta", desc: "Selezione di stagione", price: 4.00 },
+                    { id: 76, name: "Tiramisu", desc: "Classico dolce al caffè", price: 4.00 },
+                    { id: 77, name: "Cocco e Nutella", desc: "Dessert goloso", price: 5.00 },
+                    { id: 78, name: "Tortino al Cioccolato", desc: "Cuore caldo e gelato alla vaniglia", price: 6.00 },
+                    { id: 79, name: "Cheesecake", desc: "Vari gusti (chiedere disponibilità)", price: 4.50 },
+                    { id: 80, name: "Semifreddi Bindi", desc: "Selezione di semifreddi", price: 6.00 },
+                    { id: 81, name: "Ricotta e Pera", desc: "Torta classica campana", price: 5.00 },
+                    { id: 82, name: "Pizza alla Nutella", desc: "Pizza dessert", price: 7.50 },
+                    { id: 83, name: "Tartufo Bindi", desc: "Gelato tartufo", price: 5.50 },
+                    { id: 84, name: "Sorbetto al Limone", desc: "Freschissimo e digestivo", price: 4.00 },
+                    { id: 85, name: "Croccante Bindi", desc: "Gelato croccante", price: 6.50 }
+                ]
+            },
+            {
+                id: "bibite",
+                category: "Bibite & Birre",
+                items: [
+                    { id: 86, name: "Coca Cola Vetro 0.33", desc: "Classica o Zero", price: 2.50 },
+                    { id: 87, name: "Fanta Vetro 0.33", desc: "", price: 2.50 },
+                    { id: 88, name: "Acqua Sorgesana 0.75", desc: "In vetro", price: 2.00 },
+                    { id: 89, name: "Acqua Lete 0.75", desc: "In vetro", price: 2.00 },
+                    { id: 90, name: "Weiss Krombacher 0.50", desc: "Birra in bottiglia", price: 5.00 },
+                    { id: 91, name: "Kozel Chiara 0.33", desc: "Birra in bottiglia", price: 3.00 },
+                    { id: 92, name: "Ceres Rossa / Strong 0.33", desc: "Birra in bottiglia (Rossa 5€ - Strong 4€)", price: 5.00 },
+                    { id: 93, name: "Krombacher Pilsner 0.33", desc: "Birra in bottiglia", price: 3.50 },
+                    { id: 94, name: "Forst Rossa Doppio Malto 0.33", desc: "Birra in bottiglia", price: 4.00 },
+                    { id: 95, name: "Menabrea Chiara (Spina)", desc: "0.20cl (3€) - 0.40cl (4.50€)", price: 4.50 },
+                    { id: 96, name: "Menabrea Rossa (Spina)", desc: "0.20cl (3.50€) - 0.40cl (6€) - 0.50cl (7€)", price: 6.00 }
+                ]
+            },
+            {
+                id: "vini",
+                category: "Cantina Vini",
+                items: [
+                    { id: 97, name: "Falanghina della Casa 0.75", desc: "Vino bianco", price: 7.00 },
+                    { id: 98, name: "Greco IGP / Pompeiano 0.75", desc: "Cantine Santacosta / Federiciane", price: 15.00 },
+                    { id: 99, name: "Falanghina IGP 0.75", desc: "Tenuta Principe", price: 10.00 },
+                    { id: 100, name: "Aglianico della Casa 0.75", desc: "Vino rosso", price: 7.00 },
+                    { id: 101, name: "Piedirosso IGP 0.75", desc: "Tenuta Principe", price: 12.00 },
+                    { id: 102, name: "Aglianico IGP 0.75", desc: "Tenuta Principe", price: 10.00 },
+                    { id: 103, name: "Epopea Rosso 0.75", desc: "Casa vinicola Carlo Mazzella (Ischia)", price: 15.00 },
+                    { id: 104, name: "Onice Aglianico Superiore 0.75", desc: "Cantine Nativ", price: 25.00 },
+                    { id: 105, name: "Ocone Frizzichella 0.75", desc: "Vino rosato", price: 15.00 }
+                ]
+            }
+        ];
+
+        let cart = {};
+
+        function initApp() { 
+            renderFilters(); 
+            renderMenu(); 
+            popolaSlotOrari();
+        }
+
+        // Generatore di Slot Orari di 15 in 15 minuti per La Vera Bellezza
+        function popolaSlotOrari() {
+            const select = document.getElementById('orario-consegna');
+            select.innerHTML = '';
+            // Orario serale 19:00 - 23:30
+            for(let h = 19; h <= 23; h++) {
+                for(let m = 0; m < 60; m += 15) {
+                    if (h === 23 && m > 30) continue; 
+                    let hh = h.toString().padStart(2, '0');
+                    let mm = m.toString().padStart(2, '0');
+                    let timeStr = `${hh}:${mm}`;
+                    select.innerHTML += `<option value="${timeStr}">${timeStr}</option>`;
+                }
+            }
+        }
+
+        function renderFilters() {
+            const filterContainer = document.getElementById('filters-container');
+            const btnAll = document.createElement('button'); btnAll.className = 'filter-btn active'; btnAll.innerText = 'Tutti';
+            btnAll.onclick = () => filterMenu('all', btnAll); filterContainer.appendChild(btnAll);
+            menuData.forEach(cat => {
+                const btn = document.createElement('button'); btn.className = 'filter-btn'; btn.innerText = cat.category;
+                btn.onclick = () => filterMenu(cat.id, btn); filterContainer.appendChild(btn);
+            });
+        }
+
+        function filterMenu(categoryId, btnElement) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); btnElement.classList.add('active');
+            document.querySelectorAll('.category-section').forEach(section => {
+                if (categoryId === 'all' || section.id === `cat-${categoryId}`) section.classList.remove('hidden'); else section.classList.add('hidden');
+            });
+            window.scrollTo({ top: document.getElementById('filters-container').offsetTop - 20, behavior: 'smooth' });
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            menuData.forEach(category => {
+                const sectionDiv = document.createElement('div'); sectionDiv.className = 'category-section'; sectionDiv.id = `cat-${category.id}`;
+                sectionDiv.innerHTML = `<h2 class="category-title">${category.category}</h2>`;
+                category.items.forEach(item => {
+                    sectionDiv.innerHTML += `
+                        <div class="menu-item">
+                            <div class="item-header"><div class="item-name">${item.name}</div><div class="item-price">${item.price.toFixed(2).replace('.',',')}€</div></div>
+                            <p class="item-desc">${item.desc}</p>
+                            <div class="controls">
+                                <button class="btn-control" onclick="updateQty(${item.id}, -1)"><i class="fa-solid fa-minus"></i></button>
+                                <span class="qty" id="qty-${item.id}">0</span>
+                                <button class="btn-control" onclick="updateQty(${item.id}, 1)"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>`;
+                });
+                container.appendChild(sectionDiv);
+            });
+            
+            [cite_start]// Box Allergeni Info Generali [cite: 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83]
+            const allergensHTML = `
+                <div class="allergens-box">
+                    <h4>Informazioni su Ingredienti e Allergeni</h4>
+                    I piatti contrassegnati con l'asterisco <strong>(*)</strong> sono preparati con materie prime congelate o surgelate all'origine.<br><br>
+                    <strong>ATTENZIONE ALLERGIE:</strong> Il nostro menù prevede l'utilizzo di ingredienti quali: <em>Pesce, Uova, Crostacei, Glutine, Arachidi, Latte e derivati, Frutta a guscio, Sedano, Senape, Molluschi, Sesamo, Lupini, Mais, Soia, Funghi e prodotti contenenti Anidride Solforosa / Solfiti.</em><br><br>
+                    Se soffri di allergie o intolleranze alimentari, ti preghiamo di comunicarlo espressamente nelle <strong>Note Aggiuntive</strong> in fase di checkout.
+                </div>
+            `;
+            container.innerHTML += allergensHTML;
+        }
+
+        function updateQty(itemId, change) {
+            if (!cart[itemId]) cart[itemId] = 0; cart[itemId] += change; if (cart[itemId] < 0) cart[itemId] = 0;
+            document.getElementById(`qty-${itemId}`).innerText = cart[itemId]; updateCartUI();
+        }
+
+        function updateCartUI() {
+            let total = 0, totalItems = 0;
+            menuData.forEach(category => category.items.forEach(item => {
+                if (cart[item.id]) { total += item.price * cart[item.id]; totalItems += cart[item.id]; }
+            }));
+            document.getElementById('total-price').innerText = total.toFixed(2).replace('.',',') + ' €';
+            const footer = document.getElementById('cart-footer');
+            if (totalItems > 0) footer.classList.add('visible'); else footer.classList.remove('visible');
+        }
+
+        function toggleOrderType() {
+            const type = document.querySelector('input[name="order-type"]:checked').value;
+            if(type === 'takeaway') {
+                document.getElementById('lbl-takeaway').classList.add('active');
+                document.getElementById('lbl-delivery').classList.remove('active');
+                document.getElementById('takeaway-fields').style.display = 'block';
+                document.getElementById('delivery-fields').style.display = 'none';
+            } else {
+                document.getElementById('lbl-takeaway').classList.remove('active');
+                document.getElementById('lbl-delivery').classList.add('active');
+                document.getElementById('takeaway-fields').style.display = 'none';
+                document.getElementById('delivery-fields').style.display = 'block';
+            }
+        }
+
+        function openCheckout() { document.getElementById('checkout-modal').classList.add('active'); }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.remove('active'); }
+
+        async function sendOrderWithDetails() {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const orderType = document.querySelector('input[name="order-type"]:checked').value;
+            const notes = document.getElementById('cust-notes').value.trim();
+            const orario = document.getElementById('orario-consegna').value;
+
+            if(!name || !phone) { alert("Compila Nome e Telefono per continuare!"); return; }
+
+            let deliveryInfo = "";
+            if (orderType === 'delivery') {
+                const address = document.getElementById('cust-address').value.trim();
+                if(!address) { alert("Inserisci l'indirizzo di consegna."); return; }
+                deliveryInfo = `🛵 *Consegna a Domicilio*%0A📍 Indirizzo: ${address}`;
+            } else {
+                deliveryInfo = `🛍️ *Ritiro al Locale*%0A🕒 Orario Richiesto: ${orario}`;
+            }
+
+            // CREAZIONE ID ORDINE CON ORARIO PER IL DATABASE
+            const cleanName = name.replace(/\s+/g, '').toUpperCase(); 
+            const firstLetter = cleanName.charAt(0) || 'L';
+            const lastLetter = cleanName.charAt(cleanName.length - 1) || 'B';
+            const randomNum = Math.floor(10000 + Math.random() * 90000);
+            
+            const orderId = `LVB-${firstLetter}${lastLetter}-${randomNum}_${orario}`;
+            
+            const dateObj = new Date();
+            const todayStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+
+            let cartItems = []; let total = 0; 
+            let text = `*NUOVO ORDINE PAGATO CON NEXI!* 🍕%0A🆔 *Rif:* ${orderId}%0A%0A👤 *Cliente:* ${name}%0A📱 *Telefono:* ${phone}%0A${deliveryInfo}%0A`;
+            if(notes) text += `📝 *Note:* ${notes}%0A`; 
+            text += `%0A*RIEPILOGO ORDINE:*%0A`;
+
+            menuData.forEach(category => category.items.forEach(item => {
+                if (cart[item.id] > 0) {
+                    cartItems.push({ name: item.name, price: item.price, qty: cart[item.id] });
+                    const lineTotal = item.price * cart[item.id]; total += lineTotal;
+                    text += `▫️ ${cart[item.id]}x ${item.name} (${lineTotal.toFixed(2)}€)%0A`;
+                }
+            }));
+
+            if (total < 1.00) { alert("L'ordine minimo è 1.00 €!"); return; }
+            text += `%0A💰 *TOTALE: ${total.toFixed(2)} €*%0A`;
+            
+            localStorage.setItem('peterbun_order_message', text);
+
+            const btn = document.getElementById('pay-btn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Controllo Slot...'; 
+            btn.disabled = true;
+
+            // ⚠️ QUI DEVI INSERIRE L'URL DEL TUO WORKER CLOUDFLARE ⚠️
+            const WORKER_URL = "https://tuo-worker.tuonome.workers.dev/paga"; 
+
+            try {
+                // Controllo Slot tramite Cloudflare
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        orderId: orderId, 
+                        totalAmount: total,
+                        orarioSelezionato: orario,
+                        dataOrdine: todayStr
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.nexiParams) { 
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Trasferimento Sicuro...';
+                    
+                    // Popoliamo il form di Nexi e facciamo redirect
+                    document.getElementById('nexi-alias').value = data.nexiParams.alias;
+                    document.getElementById('nexi-importo').value = data.nexiParams.importo;
+                    document.getElementById('nexi-divisa').value = data.nexiParams.divisa;
+                    document.getElementById('nexi-codTrans').value = data.nexiParams.codTrans;
+                    document.getElementById('nexi-mac').value = data.nexiParams.mac;
+                    document.getElementById('nexi-url').value = data.nexiParams.url;
+                    document.getElementById('nexi-url-back').value = data.nexiParams.url_back;
+                    
+                    document.getElementById('nexi-form').submit();
+
+                } else { 
+                    // Slot Occupato
+                    alert("🚫 ATTENZIONE: " + data.error); 
+                    btn.innerHTML = '<i class="fa-regular fa-credit-card"></i> Paga con Nexi'; 
+                    btn.disabled = false; 
+                }
+            } catch (error) {
+                alert("Errore di connessione. Riprova tra poco."); 
+                btn.innerHTML = '<i class="fa-regular fa-credit-card"></i> Paga con Nexi'; 
+                btn.disabled = false;
+            }
+        }
+        
+        window.onload = initApp;
+    </script>
+</body>
+</html>
