@@ -42,6 +42,7 @@ export async function onRequest(context) {
                 "amount": amountCents,
                 "resultUrl": "https://sitolaverabellezz.pages.dev/successo.html", // <-- INSERISCI IL TUO LINK REALE
                 "cancelUrl": "https://sitolaverabellezz.pages.dev/errore.html"     // <-- INSERISCI IL TUO LINK REALE
+				"notificationUrl": "https://sitolaverabellezz.pages.dev/webhook" //
             }
         };
 

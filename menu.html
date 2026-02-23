@@ -528,7 +528,7 @@
 
             try {
                 // Chiama il nostro nuovo file backend!
-                const response = await fetch(`/orari?tipo=${type}&data=${todayStr}`);
+const response = await fetch(`/orari?tipo=${type}&data=${todayStr}&nocache=${new Date().getTime()}`);
                 const data = await response.json();
                 
                 if(data.success) {

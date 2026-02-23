@@ -1,18 +1,25 @@
 // file: functions/webhook.js
 export async function onRequest(context) {
-    if (context.request.method !== "POST") {
-        return new Response("Metodo non consentito", { status: 405 });
-    }
+    if (context.request.method !== "POST") return new Response("Metodo non consentito", { status: 405 });
 
     try {
-        const formData = await context.request.formData();
-        const esito = formData.get("esito");
-        const codTrans = formData.get("codTrans"); // Arriverà come: LVB-MR-12345_delivery_20:15
-        
-        if (esito === "OK" && codTrans) {
+        const contentType = context.request.headers.get("content-type") || "";
+        let codTrans = "";
+
+        // Legge i dati in formato JSON inviati dalle nuove API di Nexi
+        if (contentType.includes("application/json")) {
+            const body = await context.request.json();
+            // Cerca l'ID dell'ordine nel payload di Nexi
+            if (body.order && body.order.orderId) {
+                codTrans = body.order.orderId;
+            }
+        }
+
+        // Se ha trovato l'ID (es: LVB-MR-12345_delivery_20:15), scala il posto
+        if (codTrans) {
             const parts = codTrans.split("_");
-            const orarioPagato = parts[parts.length - 1]; // "20:15"
-            const tipoOrdine = parts[parts.length - 2];   // "delivery" o "takeaway"
+            const orarioPagato = parts[parts.length - 1]; 
+            const tipoOrdine = parts[parts.length - 2];   
             
             const dateObj = new Date();
             const todayStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
@@ -27,8 +34,9 @@ export async function onRequest(context) {
             return new Response("OK", { status: 200 });
         }
         
-        return new Response("KO", { status: 400 });
+        return new Response("Dati non validi", { status: 400 });
+
     } catch (err) {
-        return new Response("Errore server", { status: 500 });
+        return new Response(err.message, { status: 500 });
     }
 }
