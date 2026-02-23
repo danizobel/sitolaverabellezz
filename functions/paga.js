@@ -1,29 +1,31 @@
+// file: functions/paga.js
+const MAX_ASPORTO_PER_SLOT = 4;   // Quanti asporti ogni 15 min
+const MAX_DOMICILIO_PER_SLOT = 2; // Quante consegne ogni 15 min
+
 export async function onRequest(context) {
-    // 1. Definiamo i permessi CORS per evitare blocchi dal browser
     const corsHeaders = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
     };
 
-    // 2. Risposta di sicurezza "Preflight" obbligatoria per Cloudflare
     if (context.request.method === "OPTIONS") {
         return new Response(null, { headers: corsHeaders });
     }
-
-    // 3. Blocca richieste che non sono POST
     if (context.request.method !== "POST") {
         return new Response("Metodo non consentito", { status: 405, headers: corsHeaders });
     }
 
     try {
         const body = await context.request.json();
-        const { orderId, totalAmount, orarioSelezionato, dataOrdine } = body;
+        const { orderId, totalAmount, orarioSelezionato, dataOrdine, tipoOrdine } = body;
         
-        const slotKey = `${dataOrdine}_${orarioSelezionato}`;
-        const MAX_ORDINI_PER_SLOT = 4; // Cambia questo numero per aumentare/diminuire il limite
+        // Chiave divisa per tipo: es. "2026-02-23_delivery_20:15"
+        const slotKey = `${dataOrdine}_${tipoOrdine}_${orarioSelezionato}`;
         
-        // Verifica che il Database sia collegato
+        // Assegna il limite giusto in base al tipo di ordine
+        const limiteMax = (tipoOrdine === "delivery") ? MAX_DOMICILIO_PER_SLOT : MAX_ASPORTO_PER_SLOT;
+        
         if (!context.env.SLOT_ORARI) {
             return new Response(JSON.stringify({ 
                 success: false, 
@@ -31,18 +33,18 @@ export async function onRequest(context) {
             }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
         }
         
-        // Controllo disponibilità orario
+        // Controllo disponibilità
         let ordiniAttuali = await context.env.SLOT_ORARI.get(slotKey);
         ordiniAttuali = ordiniAttuali ? parseInt(ordiniAttuali) : 0;
 
-        if (ordiniAttuali >= MAX_ORDINI_PER_SLOT) {
+        if (ordiniAttuali >= limiteMax) {
+            const tipoText = (tipoOrdine === "delivery") ? "Consegna a Domicilio" : "Ritiro al Locale";
             return new Response(JSON.stringify({ 
                 success: false, 
-                error: `L'orario ${orarioSelezionato} è pieno. Scegli un altro orario.` 
+                error: `Spiacenti, per il servizio "${tipoText}" l'orario ${orarioSelezionato} è pieno. Scegli un altro orario.` 
             }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
         }
 
-        // Creazione Crittografia Nexi
         const amountCents = Math.round(totalAmount * 100); 
         const divisa = "EUR";
         const stringToSign = `alias=${context.env.NEXI_ALIAS}&codTrans=${orderId}&divisa=${divisa}&importo=${amountCents}&mac_key=${context.env.NEXI_MAC_KEY}`;
@@ -53,7 +55,6 @@ export async function onRequest(context) {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const mac = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-        // Risposta OK al frontend
         return new Response(JSON.stringify({
             success: true,
             nexiParams: {
@@ -62,8 +63,8 @@ export async function onRequest(context) {
                 divisa: divisa,
                 importo: amountCents,
                 mac: mac,
-                url: "https://sitolaverabellezz.pages.dev/successo.html", // <-- IMPORTANTE: INSERISCI IL TUO LINK QUI
-                url_back: "https://sitolaverabellezz.pages.dev/errore.html", // <-- IMPORTANTE: INSERISCI IL TUO LINK QUI
+                url: "https://IL_TUO_SITO.pages.dev/successo.html", // <-- AGGIORNA IL LINK
+                url_back: "https://IL_TUO_SITO.pages.dev/errore.html", // <-- AGGIORNA IL LINK
             }
         }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
 

@@ -82,7 +82,7 @@
         .form-group label { display: block; font-size: 0.85rem; color: var(--text-cream); margin-bottom: 5px; font-weight: 600; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(212,175,55,0.3); color: var(--text-cream); outline: none; font-size: 1rem; appearance: none; -webkit-appearance: none;}
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent-gold); }
-        .btn-confirm-order { width: 100%; background: #003366; /* Colore Nexi */ color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+        .btn-confirm-order { width: 100%; background: #003366; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
 
         @media (min-width: 768px) {
             .filters-container { justify-content: center; flex-wrap: wrap; overflow-x: visible; padding: 20px; border-bottom: 2px solid rgba(212, 175, 55, 0.2); }
@@ -140,12 +140,9 @@
                 <div class="form-group"><label>Nome e Cognome *</label><input type="text" id="cust-name" required></div>
                 <div class="form-group"><label>Telefono *</label><input type="tel" id="cust-phone" required></div>
 				
-                <div id="takeaway-fields">
-                    <div class="form-group">
-                        <label for="orario-consegna">Seleziona Fascia Oraria *</label>
-                        <select id="orario-consegna" name="orario" required>
-                            </select>
-                    </div>
+                <div class="form-group">
+                    <label id="orario-label" for="orario-consegna">Orario di Ritiro *</label>
+                    <select id="orario-consegna" name="orario" required></select>
                 </div>
 
                 <div id="delivery-fields" style="display: none;">
@@ -175,7 +172,6 @@
     </form>
 
     <script>
-        // MENU COMPLETO ESTRATTO DAL PDF
         const menuData = [
             {
                 id: "sfizi",
@@ -364,11 +360,9 @@
             popolaSlotOrari();
         }
 
-        // Generatore di Slot Orari di 15 in 15 minuti per La Vera Bellezza
         function popolaSlotOrari() {
             const select = document.getElementById('orario-consegna');
             select.innerHTML = '';
-            // Orario serale 19:00 - 23:30
             for(let h = 19; h <= 23; h++) {
                 for(let m = 0; m < 60; m += 15) {
                     if (h === 23 && m > 30) continue; 
@@ -418,7 +412,6 @@
                 container.appendChild(sectionDiv);
             });
             
-            [cite_start]// Box Allergeni Info Generali [cite: 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83]
             const allergensHTML = `
                 <div class="allergens-box">
                     <h4>Informazioni su Ingredienti e Allergeni</h4>
@@ -447,16 +440,18 @@
 
         function toggleOrderType() {
             const type = document.querySelector('input[name="order-type"]:checked').value;
+            const labelOrario = document.getElementById('orario-label');
+            
             if(type === 'takeaway') {
                 document.getElementById('lbl-takeaway').classList.add('active');
                 document.getElementById('lbl-delivery').classList.remove('active');
-                document.getElementById('takeaway-fields').style.display = 'block';
                 document.getElementById('delivery-fields').style.display = 'none';
+                labelOrario.innerText = "Orario di Ritiro *";
             } else {
                 document.getElementById('lbl-takeaway').classList.remove('active');
                 document.getElementById('lbl-delivery').classList.add('active');
-                document.getElementById('takeaway-fields').style.display = 'none';
                 document.getElementById('delivery-fields').style.display = 'block';
+                labelOrario.innerText = "Orario di Consegna *";
             }
         }
 
@@ -476,18 +471,18 @@
             if (orderType === 'delivery') {
                 const address = document.getElementById('cust-address').value.trim();
                 if(!address) { alert("Inserisci l'indirizzo di consegna."); return; }
-                deliveryInfo = `🛵 *Consegna a Domicilio*%0A📍 Indirizzo: ${address}`;
+                deliveryInfo = `🛵 *Consegna a Domicilio*%0A📍 Indirizzo: ${address}%0A🕒 Orario Richiesto: ${orario}`;
             } else {
                 deliveryInfo = `🛍️ *Ritiro al Locale*%0A🕒 Orario Richiesto: ${orario}`;
             }
 
-            // CREAZIONE ID ORDINE CON ORARIO PER IL DATABASE
+            // Aggiungo il TIPO ORDINE e L'ORARIO direttamente nell'ID per farli tornare con il Webhook
             const cleanName = name.replace(/\s+/g, '').toUpperCase(); 
             const firstLetter = cleanName.charAt(0) || 'L';
             const lastLetter = cleanName.charAt(cleanName.length - 1) || 'B';
             const randomNum = Math.floor(10000 + Math.random() * 90000);
             
-            const orderId = `LVB-${firstLetter}${lastLetter}-${randomNum}_${orario}`;
+            const orderId = `LVB-${firstLetter}${lastLetter}-${randomNum}_${orderType}_${orario}`;
             
             const dateObj = new Date();
             const todayStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
@@ -514,11 +509,10 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Controllo Slot...'; 
             btn.disabled = true;
 
-            // ⚠️ QUI DEVI INSERIRE L'URL DEL TUO WORKER CLOUDFLARE ⚠️
-            const WORKER_URL = "https://sitolaverabellezz.pages.dev/paga"; 
+            const WORKER_URL = "/paga"; 
 
             try {
-                // Controllo Slot tramite Cloudflare
+                // Invio anche il tipoOrdine al worker per il controllo separato
                 const response = await fetch(WORKER_URL, {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
@@ -526,7 +520,8 @@
                         orderId: orderId, 
                         totalAmount: total,
                         orarioSelezionato: orario,
-                        dataOrdine: todayStr
+                        dataOrdine: todayStr,
+                        tipoOrdine: orderType
                     })
                 });
                 
@@ -535,7 +530,6 @@
                 if (data.success && data.nexiParams) { 
                     btn.innerHTML = '<i class="fa-solid fa-lock"></i> Trasferimento Sicuro...';
                     
-                    // Popoliamo il form di Nexi e facciamo redirect
                     document.getElementById('nexi-alias').value = data.nexiParams.alias;
                     document.getElementById('nexi-importo').value = data.nexiParams.importo;
                     document.getElementById('nexi-divisa').value = data.nexiParams.divisa;
@@ -547,7 +541,6 @@
                     document.getElementById('nexi-form').submit();
 
                 } else { 
-                    // Slot Occupato
                     alert("🚫 ATTENZIONE: " + data.error); 
                     btn.innerHTML = '<i class="fa-regular fa-credit-card"></i> Paga con Nexi'; 
                     btn.disabled = false; 
