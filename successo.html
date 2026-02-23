@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ordine Confermato - Peter Bun</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Ordine Confermato - La Vera Bellezza</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         body { 
-            background: linear-gradient(135deg, #1a0f0f, #3e2723); 
-            color: #f8f1e7; display: flex; flex-direction: column; 
+            /* Sfondo Blu Navy */
+            background: linear-gradient(to bottom, #111b24, #2a4158); 
+            color: #f8f9fa; display: flex; flex-direction: column; 
             align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center;
         }
         .card {
-            background: rgba(62, 39, 35, 0.9); backdrop-filter: blur(10px);
-            padding: 40px 25px; border-radius: 24px; border: 1px solid rgba(255, 193, 7, 0.3);
+            background: rgba(26, 42, 58, 0.9); backdrop-filter: blur(10px);
+            padding: 40px 25px; border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.3);
             box-shadow: 0 15px 35px rgba(0,0,0,0.6); width: 100%; max-width: 400px;
             animation: slideUp 0.5s ease-out;
         }
@@ -26,9 +29,11 @@
             margin: 0 auto 20px; border: 2px solid #25D366;
         }
         .icon-circle i { font-size: 2.5rem; color: #25D366; }
-        h1 { font-size: 1.8rem; color: #ffc107; margin-bottom: 15px; font-weight: 800; line-height: 1.2; }
-        p { font-size: 1rem; color: #bcaaa4; margin-bottom: 30px; line-height: 1.6; }
-        .highlight { color: #f8f1e7; font-weight: 600; }
+        
+        /* Titolo Oro ed Elegante */
+        h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #d4af37; margin-bottom: 15px; font-weight: 600; line-height: 1.2; }
+        p { font-size: 1rem; color: #b0c4de; margin-bottom: 30px; line-height: 1.6; }
+        .highlight { color: #d4af37; font-weight: 600; }
         
         .btn-whatsapp {
             background: linear-gradient(45deg, #25D366, #128C7E); color: white;
@@ -53,7 +58,7 @@
         <div class="icon-circle">
             <i class="fa-solid fa-check"></i>
         </div>
-        <h1>PAGAMENTO RIUSCITO!</h1>
+        <h1>Pagamento Riuscito!</h1>
         <p>Il tuo ordine è stato saldato con successo.<br><br>
         <span class="highlight">Fai l'ultimo passo:</span> invia l'ordine alla cucina su WhatsApp per far avviare la preparazione!</p>
         
@@ -71,15 +76,15 @@
                 return;
             }
 
-            // Aggiungiamo il timbro e corretto il nome del gateway in SumUp!
-            let finalMessage = "✅ *ORDINE PAGATO ONLINE (SumUp)*%0A%0A" + orderMessage;
+            // Cambiato il testo per indicare Nexi al posto di SumUp
+            let finalMessage = "✅ *ORDINE PAGATO ONLINE (Nexi)*%0A%0A" + orderMessage;
             
-            // INSERISCI QUI IL NUMERO DI PETER BUN
-            const phoneNumber = "393203665370"; 
+            // ⚠️ INSERISCI QUI IL NUMERO DE LA VERA BELLEZZA (con il 39 davanti) ⚠️
+            const phoneNumber = "363342699836"; 
             
             window.location.href = `https://wa.me/${phoneNumber}?text=${finalMessage}`;
             
-            // Opzionale: decommenta la riga sotto se vuoi svuotare la memoria dopo l'invio
+            // Svuota la memoria dopo l'invio in modo che il cliente non possa re-inviarlo per sbaglio
             localStorage.removeItem('peterbun_order_message');
         }
     </script>

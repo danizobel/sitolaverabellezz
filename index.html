@@ -62,8 +62,8 @@ export async function onRequest(context) {
                 divisa: divisa,
                 importo: amountCents,
                 mac: mac,
-                url: "https://IL_TUO_SITO.pages.dev/successo.html", // <-- IMPORTANTE: INSERISCI IL TUO LINK QUI
-                url_back: "https://IL_TUO_SITO.pages.dev/errore.html", // <-- IMPORTANTE: INSERISCI IL TUO LINK QUI
+                url: "https://sitolaverabellezz.pages.dev/successo.html", // <-- IMPORTANTE: INSERISCI IL TUO LINK QUI
+                url_back: "https://sitolaverabellezz.pages.dev/errore.html", // <-- IMPORTANTE: INSERISCI IL TUO LINK QUI
             }
         }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
 
