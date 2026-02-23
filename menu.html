@@ -474,7 +474,7 @@
             text += `%0A💰 *TOTALE: ${total.toFixed(2)} €*%0A`;
             
             localStorage.setItem('peterbun_order_message', text);
-
+localStorage.setItem('lvb_pending_order', orderId); // <--- AGGIUNGI QUESTA RIGA QUI!
             const btn = document.getElementById('pay-btn');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Controllo Slot...'; 
             btn.disabled = true;

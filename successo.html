@@ -10,46 +10,18 @@
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { 
-            /* Sfondo Blu Navy */
-            background: linear-gradient(to bottom, #111b24, #2a4158); 
-            color: #f8f9fa; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center;
-        }
-        .card {
-            background: rgba(26, 42, 58, 0.9); backdrop-filter: blur(10px);
-            padding: 40px 25px; border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6); width: 100%; max-width: 400px;
-            animation: slideUp 0.5s ease-out;
-        }
+        body { background: linear-gradient(to bottom, #111b24, #2a4158); color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; text-align: center; }
+        .card { background: rgba(26, 42, 58, 0.9); backdrop-filter: blur(10px); padding: 40px 25px; border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.3); box-shadow: 0 15px 35px rgba(0,0,0,0.6); width: 100%; max-width: 400px; animation: slideUp 0.5s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .icon-circle {
-            width: 80px; height: 80px; background: rgba(37, 211, 102, 0.1);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 20px; border: 2px solid #25D366;
-        }
+        .icon-circle { width: 80px; height: 80px; background: rgba(37, 211, 102, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 2px solid #25D366; }
         .icon-circle i { font-size: 2.5rem; color: #25D366; }
-        
-        /* Titolo Oro ed Elegante */
         h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #d4af37; margin-bottom: 15px; font-weight: 600; line-height: 1.2; }
         p { font-size: 1rem; color: #b0c4de; margin-bottom: 30px; line-height: 1.6; }
         .highlight { color: #d4af37; font-weight: 600; }
         
-        .btn-whatsapp {
-            background: linear-gradient(45deg, #25D366, #128C7E); color: white;
-            border: none; padding: 18px 20px; border-radius: 50px; font-size: 1.1rem; 
-            font-weight: 800; cursor: pointer; display: flex; justify-content: center; 
-            align-items: center; gap: 10px; width: 100%; text-decoration: none;
-            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3); transition: transform 0.2s;
-            animation: pulse 2s infinite;
-        }
+        .btn-whatsapp { background: linear-gradient(45deg, #25D366, #128C7E); color: white; border: none; padding: 18px 20px; border-radius: 50px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; text-decoration: none; box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3); transition: transform 0.2s; animation: pulse 2s infinite; }
         .btn-whatsapp:active { transform: scale(0.96); }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
-            70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
-        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
     </style>
 </head>
 <body>
@@ -68,6 +40,22 @@
     </div>
 
     <script>
+        // CHIAMATA DI SALVATAGGIO IN BACKGROUND (IL FALLBACK!)
+        window.onload = async function() {
+            const pendingOrderId = localStorage.getItem('lvb_pending_order');
+            if (pendingOrderId) {
+                try {
+                    await fetch('/webhook', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order: { orderId: pendingOrderId } })
+                    });
+                    // Rimuove l'ID dalla memoria così non lo invia più
+                    localStorage.removeItem('lvb_pending_order');
+                } catch (e) { console.error("Errore fallback webhook", e); }
+            }
+        }
+
         function sendFinalWhatsApp() {
             let orderMessage = localStorage.getItem('peterbun_order_message');
             
@@ -76,18 +64,14 @@
                 return;
             }
 
-            // Cambiato il testo per indicare Nexi al posto di SumUp
             let finalMessage = "✅ *ORDINE PAGATO ONLINE (Nexi)*%0A%0A" + orderMessage;
             
-            // ⚠️ INSERISCI QUI IL NUMERO DE LA VERA BELLEZZA (con il 39 davanti) ⚠️
-            const phoneNumber = "363342699836"; 
+            // ⚠️ INSERISCI QUI IL NUMERO DI TELEFONO VERO ⚠️
+            const phoneNumber = "393342699836"; 
             
             window.location.href = `https://wa.me/${phoneNumber}?text=${finalMessage}`;
-            
-            // Svuota la memoria dopo l'invio in modo che il cliente non possa re-inviarlo per sbaglio
             localStorage.removeItem('peterbun_order_message');
         }
     </script>
-
 </body>
 </html>
