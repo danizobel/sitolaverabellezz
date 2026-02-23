@@ -1,6 +1,6 @@
 // file: functions/paga.js
-const MAX_ASPORTO_PER_SLOT = 4;   
-const MAX_DOMICILIO_PER_SLOT = 2; 
+const MAX_ASPORTO_PER_SLOT = 1;   
+const MAX_DOMICILIO_PER_SLOT = 1; 
 
 export async function onRequest(context) {
     const corsHeaders = {

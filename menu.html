@@ -359,19 +359,7 @@
             popolaSlotOrari();
         }
 
-        function popolaSlotOrari() {
-            const select = document.getElementById('orario-consegna');
-            select.innerHTML = '';
-            for(let h = 19; h <= 23; h++) {
-                for(let m = 0; m < 60; m += 15) {
-                    if (h === 23 && m > 30) continue; 
-                    let hh = h.toString().padStart(2, '0');
-                    let mm = m.toString().padStart(2, '0');
-                    let timeStr = `${hh}:${mm}`;
-                    select.innerHTML += `<option value="${timeStr}">${timeStr}</option>`;
-                }
-            }
-        }
+
 
         function renderFilters() {
             const filterContainer = document.getElementById('filters-container');
@@ -437,24 +425,7 @@
             if (totalItems > 0) footer.classList.add('visible'); else footer.classList.remove('visible');
         }
 
-        function toggleOrderType() {
-            const type = document.querySelector('input[name="order-type"]:checked').value;
-            const labelOrario = document.getElementById('orario-label');
-            
-            if(type === 'takeaway') {
-                document.getElementById('lbl-takeaway').classList.add('active');
-                document.getElementById('lbl-delivery').classList.remove('active');
-                document.getElementById('delivery-fields').style.display = 'none';
-                labelOrario.innerText = "Orario di Ritiro *";
-            } else {
-                document.getElementById('lbl-takeaway').classList.remove('active');
-                document.getElementById('lbl-delivery').classList.add('active');
-                document.getElementById('delivery-fields').style.display = 'block';
-                labelOrario.innerText = "Orario di Consegna *";
-            }
-        }
 
-        function openCheckout() { document.getElementById('checkout-modal').classList.add('active'); }
         function closeCheckout() { document.getElementById('checkout-modal').classList.remove('active'); }
 
         async function sendOrderWithDetails() {
@@ -540,7 +511,99 @@
                 btn.disabled = false;
             }
         }
-        
+        function getTodayString() {
+            const dateObj = new Date();
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        }
+
+        async function caricaOrariDisponibili() {
+            const select = document.getElementById('orario-consegna');
+            const payBtn = document.getElementById('pay-btn');
+            const type = document.querySelector('input[name="order-type"]:checked').value;
+            const todayStr = getTodayString();
+            
+            // Mostra stato di caricamento mentre interroga il database
+            select.innerHTML = '<option value="">Controllo disponibilità in corso...</option>';
+            payBtn.disabled = true;
+
+            try {
+                // Chiama il nostro nuovo file backend!
+                const response = await fetch(`/orari?tipo=${type}&data=${todayStr}`);
+                const data = await response.json();
+                
+                if(data.success) {
+                    select.innerHTML = '';
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    const currentMinute = now.getMinutes();
+                    
+                    // Margine di sicurezza: il cliente non può ordinare per i prossimi 20 minuti
+                    const minTimeInMinutes = (currentHour * 60) + currentMinute + 20;
+
+                    let slotAggiunti = 0;
+
+                    // Filtra gli orari restituiti dal server
+                    data.orari.forEach(timeStr => {
+                        const [hh, mm] = timeStr.split(':');
+                        const slotTimeInMinutes = (parseInt(hh) * 60) + parseInt(mm);
+                        
+                        // Mostra lo slot SOLO se è nel futuro, o se il cliente sta ordinando di pomeriggio (prima delle 19:00)
+                        if (slotTimeInMinutes >= minTimeInMinutes || currentHour < 19) {
+                            select.innerHTML += `<option value="${timeStr}">${timeStr}</option>`;
+                            slotAggiunti++;
+                        }
+                    });
+
+                    // Se tutti gli orari sono passati o pieni
+                    if (slotAggiunti === 0) {
+                        select.innerHTML = `<option value="">Nessun orario disponibile per oggi</option>`;
+                        payBtn.disabled = true;
+                        payBtn.style.opacity = '0.5';
+                    } else {
+                        payBtn.disabled = false;
+                        payBtn.style.opacity = '1';
+                    }
+                }
+            } catch (err) {
+                select.innerHTML = `<option value="">Errore di connessione</option>`;
+            }
+        }
+
+        function toggleOrderType() {
+            const type = document.querySelector('input[name="order-type"]:checked').value;
+            const labelOrario = document.getElementById('orario-label');
+            
+            if(type === 'takeaway') {
+                document.getElementById('lbl-takeaway').classList.add('active');
+                document.getElementById('lbl-delivery').classList.remove('active');
+                document.getElementById('delivery-fields').style.display = 'none';
+                labelOrario.innerText = "Orario di Ritiro *";
+            } else {
+                document.getElementById('lbl-takeaway').classList.remove('active');
+                document.getElementById('lbl-delivery').classList.add('active');
+                document.getElementById('delivery-fields').style.display = 'block';
+                labelOrario.innerText = "Orario di Consegna *";
+            }
+            
+            // Ricarica gli orari in base al nuovo tipo selezionato!
+            caricaOrariDisponibili();
+        }
+
+        function openCheckout() { 
+            document.getElementById('checkout-modal').classList.add('active'); 
+            // Quando apre il carrello, verifica in tempo reale i posti rimasti
+            caricaOrariDisponibili();
+        }
+
+        function closeCheckout() { 
+            document.getElementById('checkout-modal').classList.remove('active'); 
+        }
+
+        // Inizializzazione all'avvio della pagina (rimuovi la vecchia chiamata popolaSlotOrari)
+        function initApp() { 
+            renderFilters(); 
+            renderMenu(); 
+        }
         window.onload = initApp;
     </script>
 </body>
