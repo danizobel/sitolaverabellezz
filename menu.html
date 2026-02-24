@@ -80,7 +80,7 @@
         .cart-total span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
         .btn-checkout { background: linear-gradient(45deg, var(--accent-gold), #e6c555); color: var(--bg-dark); border: none; padding: 12px 20px; border-radius: 50px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);}
 
-        .checkout-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .checkout-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .checkout-modal.active { display: flex; }
         .checkout-content { background: var(--bg-choco); border: 1px solid var(--accent-gold); border-radius: 20px; padding: 25px 20px; width: 100%; max-width: 450px; position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
@@ -96,6 +96,7 @@
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(212,175,55,0.3); color: var(--text-cream); outline: none; font-size: 1rem; appearance: none; -webkit-appearance: none;}
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent-gold); }
         .btn-confirm-order { width: 100%; background: #003366; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+        .btn-confirm-order:disabled { opacity: 0.5; cursor: not-allowed; }
         .form-group select option { background-color: #111b24; color: #f8f9fa; }
         
         @media (min-width: 768px) {
@@ -134,30 +135,47 @@
         <button class="btn-checkout" onclick="openCheckout()"><i class="fa-solid fa-cart-shopping"></i> Paga Ora</button>
     </div>
 
+    <div class="checkout-modal active" id="initial-modal">
+        <div class="checkout-content">
+            <h3 style="text-align: center; margin-bottom: 10px; border:none;">Benvenuto!</h3>
+            <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 25px;">Seleziona come vuoi ricevere l'ordine per visualizzare gli orari disponibili.</p>
+            
+            <div class="type-toggle">
+                <label id="lbl-takeaway" class="active">
+                    <input type="radio" name="order-type" value="takeaway" checked onchange="toggleOrderType()">
+                    🛍️ Ritiro Locale
+                </label>
+                <label id="lbl-delivery">
+                    <input type="radio" name="order-type" value="delivery" onchange="toggleOrderType()">
+                    🛵 Domicilio
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label id="orario-label" for="orario-consegna">Orario di Ritiro *</label>
+                <select id="orario-consegna" name="orario" required></select>
+            </div>
+            
+            <button class="btn-confirm-order" onclick="confirmInitialSetup()" id="btn-start-order">
+                <i class="fa-solid fa-utensils"></i> Vai al Menù
+            </button>
+        </div>
+    </div>
+
     <div class="checkout-modal" id="checkout-modal">
         <div class="checkout-content">
             <i class="fa-solid fa-xmark close-modal" onclick="closeCheckout()"></i>
             <h3>Completa l'Ordine</h3>
             
-            <div id="dati-cliente-form">
-                <div class="type-toggle">
-                    <label id="lbl-takeaway" class="active">
-                        <input type="radio" name="order-type" value="takeaway" checked onchange="toggleOrderType()">
-                        🛍️ Ritiro Locale
-                    </label>
-                    <label id="lbl-delivery">
-                        <input type="radio" name="order-type" value="delivery" onchange="toggleOrderType()">
-                        🛵 Domicilio
-                    </label>
+            <div id="checkout-summary" style="text-align: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-bottom: 10px; color: var(--accent-gold); font-weight: 600; font-size: 1.1rem;">
                 </div>
+            <div style="text-align: center; margin-bottom: 25px;">
+                <button class="btn-custom" onclick="editInitialSetup()">Modifica Orario/Modalità</button>
+            </div>
 
+            <div id="dati-cliente-form">
                 <div class="form-group"><label>Nome e Cognome *</label><input type="text" id="cust-name" required></div>
                 <div class="form-group"><label>Telefono *</label><input type="tel" id="cust-phone" required></div>
-				
-                <div class="form-group">
-                    <label id="orario-label" for="orario-consegna">Orario di Ritiro *</label>
-                    <select id="orario-consegna" name="orario" required></select>
-                </div>
 
                 <div id="delivery-fields" style="display: none;">
                     <div class="form-group">
@@ -404,6 +422,8 @@
             buildItemMap();
             renderFilters(); 
             renderMenu(); 
+            // Inizia il caricamento degli orari per il modale iniziale
+            caricaOrariDisponibili();
         }
 
         function renderFilters() {
@@ -590,7 +610,10 @@
                 }
             }
             
-            document.getElementById(`qty-${itemId}`).innerText = cart[itemId]; 
+            // Se l'elemento esiste nella view principale
+            let qtySpan = document.getElementById(`qty-${itemId}`);
+            if(qtySpan) qtySpan.innerText = cart[itemId]; 
+            
             updateCartUI();
         }
 
@@ -614,8 +637,12 @@
 
         async function caricaOrariDisponibili() {
             const select = document.getElementById('orario-consegna');
-            const payBtn = document.getElementById('pay-btn');
-            const type = document.querySelector('input[name="order-type"]:checked').value;
+            const payBtn = document.getElementById('btn-start-order'); // Blocca il bottone del modal iniziale
+            
+            // Seleziona il tipo di ordine (Asporto o Domicilio)
+            const typeNode = document.querySelector('input[name="order-type"]:checked');
+            const type = typeNode ? typeNode.value : 'takeaway';
+            
             const todayStr = getTodayString();
             
             select.innerHTML = '<option value="">Controllo disponibilità in corso...</option>';
@@ -647,10 +674,8 @@
                     if (slotAggiunti === 0) {
                         select.innerHTML = `<option value="">Nessun orario disponibile per oggi</option>`;
                         payBtn.disabled = true;
-                        payBtn.style.opacity = '0.5';
                     } else {
                         payBtn.disabled = false;
-                        payBtn.style.opacity = '1';
                     }
                 }
             } catch (err) {
@@ -665,20 +690,52 @@
             if(type === 'takeaway') {
                 document.getElementById('lbl-takeaway').classList.add('active');
                 document.getElementById('lbl-delivery').classList.remove('active');
-                document.getElementById('delivery-fields').style.display = 'none';
                 labelOrario.innerText = "Orario di Ritiro *";
             } else {
                 document.getElementById('lbl-takeaway').classList.remove('active');
                 document.getElementById('lbl-delivery').classList.add('active');
-                document.getElementById('delivery-fields').style.display = 'block';
                 labelOrario.innerText = "Orario di Consegna *";
             }
             caricaOrariDisponibili();
         }
 
-        function openCheckout() { 
-            document.getElementById('checkout-modal').classList.add('active'); 
+        // Funzione per confermare la scelta iniziale e accedere al menù
+        function confirmInitialSetup() {
+            const orario = document.getElementById('orario-consegna').value;
+            if (!orario) {
+                alert("Spiacenti, non ci sono orari disponibili. Riprova più tardi.");
+                return;
+            }
+            
+            document.getElementById('initial-modal').classList.remove('active');
+        }
+
+        // Riapre il modale iniziale per modificare le scelte
+        function editInitialSetup() {
+            document.getElementById('checkout-modal').classList.remove('active');
+            document.getElementById('initial-modal').classList.add('active');
             caricaOrariDisponibili();
+        }
+
+        function openCheckout() { 
+            const type = document.querySelector('input[name="order-type"]:checked').value;
+            const orario = document.getElementById('orario-consegna').value;
+            
+            // Popola il riepilogo
+            const summaryDiv = document.getElementById('checkout-summary');
+            if (type === 'delivery') {
+                document.getElementById('delivery-fields').style.display = 'block';
+                summaryDiv.innerHTML = `<i class="fa-solid fa-motorcycle"></i> Consegna a Domicilio - Ore ${orario}`;
+            } else {
+                document.getElementById('delivery-fields').style.display = 'none';
+                summaryDiv.innerHTML = `<i class="fa-solid fa-bag-shopping"></i> Ritiro al Locale - Ore ${orario}`;
+            }
+
+            document.getElementById('checkout-modal').classList.add('active'); 
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').classList.remove('active');
         }
 
         async function sendOrderWithDetails() {
